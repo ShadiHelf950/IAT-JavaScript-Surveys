@@ -29,7 +29,7 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         template : '/minno-time/resources/IAT'
     });
 
-    //API.addSettings('onEnd', window.minnoJS.onEnd);
+    API.addSettings('onEnd', window.minnoJS.onEnd);
 
     // setting the way the logger works (how often we send data to the server and the url for the data)
     //API.addSettings('logger',{
