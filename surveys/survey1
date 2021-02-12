@@ -21,7 +21,7 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
     API.addSettings('canvas',{
         background:'black',
         maxWidth: 1300,
-        proportions : 0.58
+        proportions : 0.56
     });
 
     // setting the base urls for images and templates
@@ -276,14 +276,12 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         // ##### block5
         // This is a concept block, this time with concept 1 on the right instead of the left.
         {
-            data: {block:5,row:1, left1:attribute1, right1:attribute2, left2:concept2, right2:concept1,
-                condition: attribute1 + ',' + concept2 + '/' + attribute2 + ',' + concept1,
-                // This block is also marked as part of a parcel for the scorer
+            data: {block:5,row:1, left1:attribute1, right1:attribute2, left2:concept2, right2:concept1, condition: attribute1 + ',' + concept2 + '/' + attribute2 + ',' + concept1,
                 parcel:'first'
             },
             inherit: 'Default',
             stimuli: [
-                {inherit:{type:'exRandom',set:'concept2_left'}},
+                {inherit:{type:'exRandom',set:'concept1_right'}},
                 {inherit:{type:'random',set:'feedback'}}
             ]
         },
@@ -300,7 +298,9 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         // ##### block6
         // This is a combined block; attribute1 stayed on the left but now concept1 is on the right.
         {
-            data: {block:6, row:1, left1:attribute1, right1:attribute2, left2:concept2, right2:concept1, condition: attribute1 + ',' + concept2 + '/' + attribute2 + ',' + concept1,parcel:'first'},
+            data: {block:6,row:1, left1:attribute1, right1:attribute2, left2:concept2, right2:concept1, condition: attribute1 + ',' + concept2 + '/' + attribute2 + ',' + concept1,
+                parcel:'first'
+            },
             inherit: 'Default',
             stimuli: [
                 {inherit:{type:'exRandom',set:'concept1_right'}},
@@ -480,10 +480,11 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
 					 + 'ים לקבוצות. המשימה הזו דורשת מכם למיין פריטים, מהר ככל האפשר, אבל עם כמה שפחות טעויות'
 					 + '. אם תהיו איטיים מדי או תבצעו טעויות רבות מדי, לא נוכל לפרש את התוצאות. משימה זו תיארך'
 					 + ' כחמש דקות. להלן, רשימה של שמות של קטגוריות ופריטים שמתאימים להן <br/><br/>חיובי	: טוב,' 
-					 + 'צודק, חזק, מוצלח, מנצח, מאושר, חכם, אהוב, ראוי, גאה<br/><br/>שלילי :	רע, טועה, חלש,' 
-					 + 'כשלון, מפסידן, מדוכא, טיפש, שנוא, עלוב, אשם<br/><br/>עצמי :	אני, אותי, שלי<br/><br/>האחר :	הם, אותם, ש'
+					 + 'צודק, חזק, מוצלח, מנצח, מאושר, חכם, אהוב, ראוי, גאה<br/>שלילי :	רע, טועה, חלש,' 
+					 + 'כשלון, מפסידן, מדוכא, טיפש, שנוא, עלוב, אשם<br/>עצמי :	אני, אותי, שלי<br/>האחר :	הם, אותם, ש'
 					 + 'להם<br/><br/>M ו X על מנת להתחיל הניחו את האצבע המורה בכל יד על המקשים'
-					 + '<br/>במקלדת כדי שתוכלו לענות. שתי כותרות בראש המסך יורו לכם אילו מילים מתאימות לכל מקש'
+					 + '<br/>במקלדת כדי שתוכלו לענות. ראו בתמונה איך לעשות זאת.  שתי כותרות בראש המסך יורו לכם אילו מילים מתאימות לכל מקש'
+					 + '<br/><img src="https://raw.githubusercontent.com/ShadiHelf950/IAT-JavaScript-Surveys/main/buttons_map.png" width="290" height="90">'
 					 + '<br/><br/>לחצו על מקש הרווח כדי להתחיל</p></div>'
 					}
                 }
@@ -523,7 +524,7 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         // repeat the block 1 trial 20 times
         {
             mixer : 'repeat',
-            times : 1,
+            times : 5,
             data : [
                 {inherit : {type:'byData', data:{block:1}, set:'IAT'}}
             ]
@@ -555,7 +556,7 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         },
         {
             mixer : 'repeat',
-            times : 1,
+            times : 5,
             data : [
                 {inherit : {type:'byData', data:{block:2}, set:'IAT'}}
             ]
@@ -587,7 +588,7 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         },
         {
             mixer: 'repeat',
-            times: 1,
+            times: 5,
             data: [
                 {inherit : {type:'byData', data:{block:3,row:1}, set:'IAT'}},
                 {inherit : {type:'byData', data:{block:3,row:2}, set:'IAT'}}
@@ -621,7 +622,7 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         },
         {
             mixer: 'repeat',
-            times: 1,
+            times: 5,
             data: [
                 {inherit : {type:'byData', data:{block:4,row:1}, set:'IAT'}},
                 {inherit : {type:'byData', data:{block:4,row:2}, set:'IAT'}}
@@ -655,10 +656,10 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         },
         {
             mixer : 'repeat',
-            times : 1,
+            times : 5,
             data: [
-                {inherit : {type:'byData', data:{block:3,row:2}, set:'IAT'}},
-                {inherit : {type:'byData', data:{block:3,row:1}, set:'IAT'}}
+                {inherit : {type:'byData', data:{block:5,row:1}, set:'IAT'}},
+                {inherit : {type:'byData', data:{block:5,row:2}, set:'IAT'}}
             ]
         },
 
@@ -689,10 +690,10 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         },
         {
             mixer: 'repeat',
-            times: 1,
+            times: 5,
             data: [
-                {inherit : {type:'byData', data:{block:3,row:2}, set:'IAT'}},
-                {inherit : {type:'byData', data:{block:3,row:1}, set:'IAT'}}
+                {inherit : {type:'byData', data:{block:6,row:1}, set:'IAT'}},
+                {inherit : {type:'byData', data:{block:6,row:2}, set:'IAT'}}
             ]
         },
 
