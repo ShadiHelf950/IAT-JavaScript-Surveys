@@ -17,6 +17,39 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
      ***********************************************************
      */
 	 
+	 API.addSettings('logger', {
+    // gather logs in array
+    onRow: function(logName, log, settings, ctx){
+        if (!ctx.logs) ctx.logs = [];
+        ctx.logs.push(log);
+    },
+    // onEnd trigger save (by returning a value)
+    onEnd: function(name, settings, ctx){
+        return ctx.logs;
+    },
+    // Transform logs into a string
+    // we save as CSV because qualtrics limits to 20K characters and this is more efficient.
+    serialize: function (name, logs) {
+        var headers = ['group', 'latency', 'block', 'stimulus', 'correct'];
+        var content = logs.map(function (log) { return [log.data.alias, log.latency, log.data.block, log.data.stimIndex, log.data.score]; });
+        content.unshift(headers);
+        return toCsv(content);
+
+        function toCsv(matrice) { return matrice.map(buildRow).join('\n'); }
+        function buildRow(arr) { return arr.map(normalize).join(','); }
+        // wrap in double quotes and escape inner double quotes
+        function normalize(val) {
+            var quotableRgx = /(\n|,|")/;
+            if (quotableRgx.test(val)) return '"' + val.replace(/"/g, '""') + '"';
+            return val;
+        }
+    },
+    // Set logs into an input (i.e. put them wherever you want)
+    send: function(name, serialized){
+        window.minnoJS.logger(serialized);
+    }
+});
+	 
     // set the canvas size
     API.addSettings('canvas',{
         background:'black',
@@ -585,13 +618,13 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
                     data : {'handle':'instStim'},
                     css: {color:'black'},
                     media:{
-					html:'<div><p style="font-size:25px;color:#FFFAFA">במשימה הבאה, תתבקשו למיין מיל'
+					html:'<div><p style="text-align:center;font-size:25px;color:#FFFAFA">במשימה הבאה, תתבקשו למיין מיל'
 					 + 'ים לקבוצות. המשימה הזו דורשת מכם למיין פריטים, מהר ככל האפשר, אבל עם כמה שפחות טעויות'
 					 + '. אם תהיו איטיים מדי או תבצעו טעויות רבות מדי, לא נוכל לפרש את התוצאות. משימה זו תיארך'
-					 + '<br/>.כחמש דקות. להלן, רשימה של שמות של קטגוריות ופריטים שמתאימים להן<br/>' 
+					 + '<br/>.בערך כחמש דקות. להלן, נתונה לכם רשימה של שמות של קטגוריות ופריטים שמתאימים להן<br/>' 
 					 + '<br/><img src="https://raw.githubusercontent.com/ShadiHelf950/IAT-JavaScript-Surveys/main/properties_table.png" width="800" height="142">'
-					 + '<br/><br/>במקלדת כדי שתוכלו לענות M ו X על מנת להתחיל הניחו את האצבע המורה בכל יד על המקשים'
-					 + '<br/>.ראו בתמונה.  שתי כותרות בראש המסך יורו לכם אילו מילים מתאימות לכל מקש'
+					 + '<br/><br/>.במקלדת כדי שתוכלו לענות (ראו בתמונה) M ו X על מנת להתחיל, הניחו את האצבע המורה בכל יד על המקשים'
+					 + '<br/>.בראש המסך יופיעו לכם שתי כותרות שיורו לכם אילו מילים מתאימות לכל מקש'
 					 + '<br/><img src="https://raw.githubusercontent.com/ShadiHelf950/IAT-JavaScript-Surveys/main/buttons_map.png" width="350" height="150">'
 					 + '<br/><br/>לחצו על מקש הרווח כדי להתחיל</p></div>'
 					}
@@ -616,12 +649,12 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
                 {//The instructions stimulus
                     inherit:'Instructions',
                     media:{
-					html:'<div><p style="font-size:28px;color:#FFFAFA">'
+					html:'<div><div><p style="text-align:center;font-size:25px;color:#FFFAFA">'
 					+ '. X כדי לשייך פריטים לקטגוריית "עצמי" נא ללחוץ על לחצן התגובה<br/>'
 					+ '. M כדי לשייך פריטים לקטגוריית "האחר" נא ללחוץ על לחצן התגובה<br/><br/>'
 					+ '.פריטים יופיעו זה לאחר זה באמצע המסך<br/><br/>'
-					+ 'בתחתית המסך, ועל מנת להמשיך, תצטרכו לתקן  X אם תעשו טעות אז יופיע <br/>'
-					+ '.את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
+					+ 'אם תעשו טעות אז יופיע לכם בתחתית המסך הסמל<h1 style="color:red;">X</h1>  <br/>'
+					+ '.ועל מנת להמשיך, תצטרכו לתקן את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
 					+ '.בצעו את המשימה מהר ככל האפשר והשתדלו לטעות כמה שפחות<br/><br/>'
 					+ '- לחצו על מקש הרווח כאשר אתם מוכנים להתחיל -</p></div>'
 					
@@ -649,12 +682,12 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
 			{//The instructions stimulus
                     inherit:'Instructions',
                     media:{
-					html:'<div><p style="font-size:28px;color:#FFFAFA">'
+					html:'<div><p style="font-size:25px;color:#FFFAFA">'
 					+ '. X כדי לשייך פריטים לקטגוריית "שלילי" נא ללחוץ על לחצן התגובה<br/>'
 					+ '. M כדי לשייך פריטים לקטגוריית "חיובי" נא ללחוץ על לחצן התגובה<br/><br/>'
 					+ '.פריטים יופיעו זה לאחר זה באמצע המסך<br/><br/>'
-					+ 'בתחתית המסך, ועל מנת להמשיך, תצטרכו לתקן  X אם תעשו טעות אז יופיע <br/>'
-					+ '.את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
+					+ 'אם תעשו טעות אז יופיע לכם בתחתית המסך הסמל<h1 style="color:red;">X</h1>  <br/>'
+					+ '.ועל מנת להמשיך, תצטרכו לתקן את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
 					+ '.בצעו את המשימה מהר ככל האפשר והשתדלו לטעות כמה שפחות<br/><br/>'
 					+ '- לחצו על מקש הרווח כאשר אתם מוכנים להתחיל -</p></div>'
 					
@@ -681,12 +714,12 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
 			{//The instructions stimulus
                     inherit:'Instructions',
                     media:{
-					html:'<div><p style="font-size:28px;color:#FFFAFA">'
+					html:'<div><p style="font-size:25px;color:#FFFAFA">'
 					+ '. X כדי לשייך פריטים לקטגוריית "חיובי" או "עצמי" נא ללחוץ על לחצן התגובה<br/>'
 					+ '. M כדי לשייך פריטים לקטגוריית "שלילי" או "האחר" נא ללחוץ על לחצן התגובה<br/><br/>'
 					+ '.כל פריט שייך לקטגוריה אחת בלבד<br/><br/>'
-					+ 'בתחתית המסך, ועל מנת להמשיך, תצטרכו לתקן  X אם תעשו טעות אז יופיע <br/>'
-					+ '.את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
+					+ 'אם תעשו טעות אז יופיע לכם בתחתית המסך הסמל<h1 style="color:red;">X</h1>  <br/>'
+					+ '.ועל מנת להמשיך, תצטרכו לתקן את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
 					+ '.בצעו את המשימה מהר ככל האפשר והשתדלו לטעות כמה שפחות<br/><br/>'
 					+ '- לחצו על מקש הרווח כאשר אתם מוכנים להתחיל -</p></div>'
 					
@@ -696,7 +729,7 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         },
         {
             mixer: 'repeat',
-            times: 40,
+            times: 20,
             data: [
                 {inherit : {type:'byData', data:{block:3,row:1}, set:'IAT'}},
                 {inherit : {type:'byData', data:{block:3,row:2}, set:'IAT'}}
@@ -714,13 +747,13 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
 			{//The instructions stimulus
                     inherit:'Instructions',
                     media:{
-					html:'<div><p style="font-size:28px;color:#FFFAFA">'
+					html:'<div><p style="font-size:25px;color:#FFFAFA">'
 					+ '.שלב זה זהה לשלב הקודם<br/><br/>'
 					+ '. X כדי לשייך פריטים לקטגוריית "חיובי" או "עצמי" נא ללחוץ על לחצן התגובה<br/>'
 					+ '. M כדי לשייך פריטים לקטגוריית "שלילי" או "האחר" נא ללחוץ על לחצן התגובה<br/><br/>'
 					+ '.כל פריט שייך לקטגוריה אחת בלבד<br/><br/>'
-					+ 'בתחתית המסך, ועל מנת להמשיך, תצטרכו לתקן  X אם תעשו טעות אז יופיע <br/>'
-					+ '.את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
+					+ 'אם תעשו טעות אז יופיע לכם בתחתית המסך הסמל<h1 style="color:red;">X</h1>  <br/>'
+					+ '.ועל מנת להמשיך, תצטרכו לתקן את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
 					+ '.בצעו את המשימה מהר ככל האפשר והשתדלו לטעות כמה שפחות<br/><br/>'
 					+ '- לחצו על מקש הרווח כאשר אתם מוכנים להתחיל -</p></div>'
 					
@@ -748,10 +781,12 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
                 {//The instructions stimulus
                     inherit:'Instructions',
                     media:{
-					html:'<div><p style="font-size:28px;color:#FFFAFA">'
+					html:'<div><p style="font-size:25px;color:#FFFAFA">'
 					+ '!נא לשים לב, הקטגוריות החליפו צדדים<br/><br/>'
 					+ '. X כדי לשייך פריטים לקטגוריית "האחר" נא ללחוץ על לחצן התגובה<br/>'
 					+ '. M כדי לשייך פריטים לקטגוריית "עצמי" נא ללחוץ על לחצן התגובה<br/><br/>'
+					+ 'אם תעשו טעות אז יופיע לכם בתחתית המסך הסמל<h1 style="color:red;">X</h1>  <br/>'
+					+ '.ועל מנת להמשיך, תצטרכו לתקן את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
 					+ '.בצעו את המשימה מהר ככל האפשר והשתדלו לטעות כמה שפחות<br/><br/>'
 					+ '- לחצו על מקש הרווח כאשר אתם מוכנים להתחיל -</p></div>'
 					
@@ -779,12 +814,12 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
 			{//The instructions stimulus
                     inherit:'Instructions',
                     media:{
-					html:'<div><p style="font-size:28px;color:#FFFAFA">'
+					html:'<div><p style="font-size:25px;color:#FFFAFA">'
 					+ '. X כדי לשייך פריטים לקטגוריית "חיובי" או "האחר" נא ללחוץ על לחצן התגובה<br/>'
 					+ '. M כדי לשייך פריטים לקטגוריית "שלילי" או "עצמי" נא ללחוץ על לחצן התגובה<br/><br/>'
 					+ '.כל פריט שייך לקטגוריה אחת בלבד<br/><br/>'
-					+ 'בתחתית המסך, ועל מנת להמשיך, תצטרכו לתקן  X אם תעשו טעות אז יופיע <br/>'
-					+ '.את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
+					+ 'אם תעשו טעות אז יופיע לכם בתחתית המסך הסמל<h1 style="color:red;">X</h1>  <br/>'
+					+ '.ועל מנת להמשיך, תצטרכו לתקן את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
 					+ '.בצעו את המשימה מהר ככל האפשר והשתדלו לטעות כמה שפחות<br/><br/>'
 					+ '- לחצו על מקש הרווח כאשר אתם מוכנים להתחיל -</p></div>'
 					
@@ -794,7 +829,7 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
         },
         {
             mixer : 'repeat',
-            times : 40,
+            times : 20,
             data: [
                 {inherit : {type:'byData', data:{block:6,row:1}, set:'IAT'}},
                 {inherit : {type:'byData', data:{block:6,row:2}, set:'IAT'}}
@@ -812,13 +847,13 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
 			{//The instructions stimulus
                     inherit:'Instructions',
                     media:{
-					html:'<div><p style="font-size:28px;color:#FFFAFA">'
+					html:'<div><p style="font-size:25px;color:#FFFAFA">'
 					+ '.שלב זה זהה לשלב הקודם<br/><br/>'
 					+ '. X כדי לשייך פריטים לקטגוריית "חיובי" או "האחר" נא ללחוץ על לחצן התגובה<br/>'
 					+ '. M כדי לשייך פריטים לקטגוריית "שלילי" או "עצמי" נא ללחוץ על לחצן התגובה<br/><br/>'
 					+ '.כל פריט שייך לקטגוריה אחת בלבד<br/><br/>'
-					+ 'בתחתית המסך, ועל מנת להמשיך, תצטרכו לתקן  X אם תעשו טעות אז יופיע <br/>'
-					+ '.את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
+					+ 'אם תעשו טעות אז יופיע לכם בתחתית המסך הסמל<h1 style="color:red;">X</h1>  <br/>'
+					+ '.ועל מנת להמשיך, תצטרכו לתקן את תגובתכם באמצעות לחיצה על מקש התגובה האחר<br/><br/>'
 					+ '.בצעו את המשימה מהר ככל האפשר והשתדלו לטעות כמה שפחות<br/><br/>'
 					+ '- לחצו על מקש הרווח כאשר אתם מוכנים להתחיל -</p></div>'
 					
@@ -835,8 +870,7 @@ define(['pipAPI','pipScorer'], function(APIConstructor,Scorer) {
             ]
         },
 
-        // ##### block 7
-        // block 7 instructions
+        // ##### end block
         {
             inherit: {set:'introduction', type:'byData', data: {block:'generic'}},
             stimuli: 
